@@ -1,0 +1,33 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+version = '0.3'
+if (!hasProperty('mainClass')) {
+    ext.mainClass = 'com.zingkg.shippinglabelcreator.MainWindow'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': mainClass,
+            'Implementation-Title': 'Gradle',
+            'Implementation-Version': version
+        )
+    }
+
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.ini4j:ini4j:0.5.4'
+    testCompile 'junit:junit:4.12'
+}

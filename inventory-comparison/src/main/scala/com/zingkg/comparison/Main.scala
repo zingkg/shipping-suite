@@ -5,7 +5,7 @@ import com.github.tototoshi.csv.CSVWriter
 import scala.util.Try
 
 object Main extends App {
-  case class Config(inputFile: String = "", outputFile: String = "a.tex")
+  case class Config(inputFile: String = "", maybeOutputFile: Option[String] = None)
 
   val parser = new scopt.OptionParser[Config]("deduplicate") {
     opt[String]('i', "input-file")
@@ -18,13 +18,13 @@ object Main extends App {
     opt[String]('o', "output-file")
       .text("output file to save to")
       .action { (outputFile, config) =>
-        config.copy(outputFile = outputFile)
+        config.copy(maybeOutputFile = Some(outputFile))
       }
   }
 
   def readFile(filename: String): Seq[Seq[String]] = {
     val reader = CSVReader.open(new java.io.File(filename))
-    val lines = reader.all()
+    val lines = reader.all().drop(1)
     reader.close()
     lines
   }
@@ -43,12 +43,23 @@ object Main extends App {
       _.maybeItem1.map(_.itemId).getOrElse("")
     )
     val unprocessedLines = matchingLines.map(Common.unprocessLine)
-    writeFile(config.outputFile, unprocessedLines)
+    writeFile(config.maybeOutputFile.getOrElse("a.csv"), unprocessedLines)
   }
 }
 
 object Common {
-  case class Item(itemId: String, count: Int)
+  case class Item(
+    itemId: String,
+    quantity: Int,
+    maybeColumn1: Option[String] = None,
+    maybeColumn2: Option[String] = None,
+    maybeColumn3: Option[String] = None,
+    maybeColumn4: Option[String] = None,
+    maybeColumn5: Option[String] = None
+  ) {
+    def extraColumns: Seq[String] =
+      Seq(maybeColumn1, maybeColumn2, maybeColumn3, maybeColumn4, maybeColumn5).flatten
+  }
   case class Line(maybeItem1: Option[Item], maybeItem2: Option[Item])
 
   def accumulateItems(lines: Seq[Line]): (Map[String, Item], Map[String, Item]) =
@@ -63,30 +74,71 @@ object Common {
     inventory: Map[String, Item],
     maybeItem: Option[Item]): Map[String, Item] =
     maybeItem.map { item =>
-      val updatedItem = inventory.get(item.itemId).map { inventoryItem =>
-        Item(item.itemId, inventoryItem.count + item.count)
-      }.getOrElse(item)
+      val updatedItem = inventory.get(item.itemId)
+        .map(_.copy(quantity = item.quantity))
+        .getOrElse(item)
       inventory + (item.itemId -> updatedItem)
     }.getOrElse(inventory)
 
   def processLine(line: Seq[String]): Line =
-    Line(processItem(line.head, line(1)), processItem(line(2), line(3)))
+    Line(
+      processItem(line.head, line(1)),
+      processItem(
+        line(2),
+        line(3),
+        maybeColumn1 = parseOptional(line, 4),
+        maybeColumn2 = parseOptional(line, 5),
+        maybeColumn3 = parseOptional(line, 6),
+        maybeColumn4 = parseOptional(line, 7),
+        maybeColumn5 = parseOptional(line, 8)
+      )
+    )
 
-  def processItem(itemId: String, count: String): Option[Item] =
-    if (itemId.nonEmpty)
-      Some(Item(itemId, Try(count.toInt).getOrElse(0)))
-    else
+  private def parseOptional(tokens: Seq[String], pos: Int): Option[String] =
+    if (tokens.length <= pos || tokens(pos).isEmpty)
       None
+    else
+      Some(tokens(pos))
 
-  def unprocessLine(line: Line): Seq[String] =
-    unprocessItem(line.maybeItem1) ++ unprocessItem(line.maybeItem2)
+  def processItem(
+    itemId: String,
+    quantity: String,
+    maybeColumn1: Option[String] = None,
+    maybeColumn2: Option[String] = None,
+    maybeColumn3: Option[String] = None,
+    maybeColumn4: Option[String] = None,
+    maybeColumn5: Option[String] = None
+  ): Option[Item] =
+    if (itemId.nonEmpty) {
+      Some(
+        Item(
+          itemId,
+          Try(quantity.toInt).getOrElse(0),
+          maybeColumn1,
+          maybeColumn2,
+          maybeColumn3,
+          maybeColumn4,
+          maybeColumn5
+        )
+      )
+    } else {
+      None
+    }
+
+  def unprocessLine(line: Line): Seq[String] = {
+    val item1Extras = line.maybeItem1.map(_.extraColumns).getOrElse(Seq.empty)
+    val item2Extras = line.maybeItem2.map(_.extraColumns).getOrElse(Seq.empty)
+    val extras = if (item1Extras.nonEmpty) item1Extras else item2Extras
+    unprocessItem(line.maybeItem1) ++ unprocessItem(line.maybeItem2) ++ extras
+  }
 
   def unprocessItem(maybeItem: Option[Item]): Seq[String] =
-    maybeItem.map(item => Seq(item.itemId, item.count.toString)).getOrElse(Seq("", ""))
+    maybeItem.map(item => Seq(item.itemId, item.quantity.toString)).getOrElse(Seq("", ""))
 
   def assembleMatchingLines(
     inventory1: Map[String, Item],
-    inventory2: Map[String, Item]): Seq[Line] =
+    inventory2: Map[String, Item]
+  ): Seq[Line] =
     if (inventory1.size >= inventory2.size) {
       val keysMissingInInventory = inventory2.keySet -- inventory1.keySet
       val matchingLines = inventory1.mapValues { item =>

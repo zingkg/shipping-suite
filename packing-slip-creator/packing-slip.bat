@@ -3,7 +3,7 @@ title Packing Slip Creator
 echo Welcome to the packing slip creator
 if exist "packing-slip-input.csv" (
     echo Processing file 'packing-slip-input.csv'
-    java -jar packing-slip-creator-0.4.jar -i "packing-slip-input.csv"
+    java -jar packing-slip-creator-0.5.jar -i "packing-slip-input.csv"
     if exist "a.tex" (
         echo Converting to pdf
         pdflatex --quiet a.tex

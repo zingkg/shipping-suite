@@ -1,16 +1,18 @@
 package com.zingkg.packingslipcreator;
 
 object Latex {
-  def generateLatex(
-    packingSlipPairs: Iterator[(PackingSlip, Option[PackingSlip])]
-  ): Seq[String] = {
-    val header = Seq(
+  def header: Seq[String] =
+    Seq(
       "\\documentclass{article}",
       "\\usepackage[letterpaper, landscape, top=0.1cm, bottom=0.1cm, left=0.2cm, " +
         "right=0.2cm]{geometry}",
       "\\begin{document}"
     )
-    val packingSlips = packingSlipPairs.flatMap {
+
+  def generateLatex(
+    packingSlipPairs: Iterator[(PackingSlip, Option[PackingSlip])]
+  ): Seq[String] =
+    packingSlipPairs.flatMap {
       case (left, maybeRight) =>
         val leftString = packingSlipStrings(left)
         val rightStrings = maybeRight.map { right =>
@@ -19,29 +21,47 @@ object Latex {
             packingSlipStrings(right)
           ).flatten
         }.getOrElse(Seq.empty)
-        leftString ++ rightStrings ++ Seq("\\newpage")
-    }
-    header ++ packingSlips ++ Seq("\\end{document}")
-  }
+        Seq("\\vbox{%") ++ leftString ++ rightStrings ++ Seq("}", "\\vspace{5mm}")
+    }.toList
+
+  def endDocument: String =
+    "\\end{document}"
 
   private def packingSlipStrings(packingSlip: PackingSlip): Seq[String] = {
+    val size = "{\\Large"
     val header = Seq(
       "\\begin{minipage}{0.45\\textwidth}",
-      "{\\huge",
-      s"\\begin{flushright}${packingSlip.company}\\end{flushright}",
-      s"\\begin{center}${packingSlip.poId}\\end{center}",
-      s"\\begin{center}${packingSlip.shipTo}\\end{center}"
+      s"$size \\begin{flushright}${packingSlip.company}\\end{flushright}}",
+      latexCenter(packingSlip.poId, size),
+      latexCenter(packingSlip.shipToName, size)
     )
-    val shipSpeed = packingSlip.maybeShipSpeed.map { shipSpeed =>
-      s"\\begin{center}$shipSpeed\\end{center}"
-    }.toSeq ++ Seq("\\vspace{10em}")
+    val shipSpeed = packingSlip.maybeShipSpeed.map(latexCenter(_, size)).toSeq :+ "\\vspace{10em}"
 
-    val baseItemRow = s"${packingSlip.itemId} \\hfill ${packingSlip.quantity}"
+    val baseItemRow = s"$size ${packingSlip.itemId} \\hfill ${packingSlip.quantity}"
     val itemRow = packingSlip.maybeCost.map { cost =>
-      baseItemRow + s" \\hfill \\$cost"
-    }.getOrElse(baseItemRow)
+      baseItemRow + s" \\hfill \\$cost}"
+    }.getOrElse(baseItemRow + "}")
 
-    header ++ shipSpeed ++ Seq(itemRow, "}", "\\end{minipage}%")
+    header ++ shippingAddress(packingSlip) ++ shipSpeed ++ Seq(itemRow, "\\end{minipage}%")
+  }
+
+  private def latexCenter(string: String, size: String): String =
+    s"$size \\begin{center}$string\\end{center}}"
+
+  private def shippingAddress(packingSlip: PackingSlip): Seq[String] = {
+    val size = "{\\small"
+    Seq(
+      packingSlip.maybeShipToAddress.map { address =>
+        latexCenter(s"$address ${packingSlip.maybeShipToAddress2.getOrElse("")}", size)
+      },
+      packingSlip.maybeShipToCity.map { city =>
+        latexCenter(
+          s"$city, ${packingSlip.maybeShipToState.getOrElse("")} ${packingSlip.maybeShipToZip.getOrElse("")}",
+          size
+        )
+      },
+      packingSlip.maybeShipToPhone.map(latexCenter(_, size))
+    ).flatten
   }
 }
 
@@ -71,7 +91,13 @@ object MonetaryAmount {
 case class PackingSlip(
   company: String,
   poId: String,
-  shipTo: String,
+  shipToName: String,
+  maybeShipToAddress: Option[String],
+  maybeShipToAddress2: Option[String],
+  maybeShipToCity: Option[String],
+  maybeShipToState: Option[String],
+  maybeShipToZip: Option[String],
+  maybeShipToPhone: Option[String],
   itemId: String,
   quantity: Int,
   maybeCost: Option[MonetaryAmount],
@@ -79,23 +105,43 @@ case class PackingSlip(
 )
 
 object PackingSlip {
-  def fromCSVLine(line: String): PackingSlip = {
-    val tokens = line.split(",")
+  def fromTokens(tokens: Seq[String]): PackingSlip = {
     val company = tokens.head
     val poId = tokens(1)
-    val shipTo = tokens(2)
-    val itemId = tokens(3)
-    val quantity = tokens(4).toInt
-    val maybeCost = if (tokens.length < 6 || tokens(5).isEmpty())
-      None
-    else
-      Some(MonetaryAmount.fromString(tokens(5).trim()))
+    val shipToName = tokens(2)
+    val maybeShipToAddress = parseOptional(tokens, position = 3)
+    val maybeShipToAddress2 = parseOptional(tokens, position = 4)
+    val maybeShipToCity = parseOptional(tokens, position = 5)
+    val maybeShipToState = parseOptional(tokens, position = 6)
+    val maybeShipToZip = parseOptional(tokens, position = 7)
+    val maybeShipToPhone = parseOptional(tokens, position = 8)
+    val itemId = tokens(9)
+    val quantity = tokens(10).toInt
+    val maybeCost = parseOptional(tokens, position = 11).map { cost =>
+      MonetaryAmount.fromString(cost.trim)
+    }
+    val maybeShipSpeed = parseOptional(tokens, position = 12)
 
-    val maybeShipSpeed = if (tokens.length < 7 || tokens(6).isEmpty())
-      None
-    else
-      Some(tokens(6))
-
-    PackingSlip(company, poId, shipTo, itemId, quantity, maybeCost, maybeShipSpeed)
+    PackingSlip(
+      company,
+      poId,
+      shipToName,
+      maybeShipToAddress,
+      maybeShipToAddress2,
+      maybeShipToCity,
+      maybeShipToState,
+      maybeShipToZip,
+      maybeShipToPhone,
+      itemId,
+      quantity,
+      maybeCost,
+      maybeShipSpeed
+    )
   }
+
+  private def parseOptional(tokens: Seq[String], position: Int): Option[String] =
+    if (tokens.length <= position || tokens(position).isEmpty)
+      None
+    else
+      Some(tokens(position))
 }

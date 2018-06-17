@@ -21,7 +21,7 @@ object Latex {
             packingSlipStrings(right)
           ).flatten
         }.getOrElse(Seq.empty)
-        Seq("\\vbox{%") ++ leftString ++ rightStrings ++ Seq("}", "\\vspace{5mm}")
+        Seq("\\vbox{%") ++ leftString ++ rightStrings ++ Seq("}", "\\vspace{5em}")
     }.toList
 
   def endDocument: String =

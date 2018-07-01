@@ -40,7 +40,7 @@ object Main extends App {
     val processedLines = lines.map(Common.processLine)
     val (inventory1, inventory2) = Common.accumulateItems(processedLines)
     val matchingLines = Common.assembleMatchingLines(inventory1, inventory2).sortBy(
-      _.maybeItem1.map(_.itemId).getOrElse("")
+      _.maybeItem1.map(_.itemId).getOrElse("~~~~~")
     )
     val unprocessedLines = matchingLines.map(Common.unprocessLine)
     writeFile(config.maybeOutputFile.getOrElse("a.csv"), unprocessedLines)
@@ -55,10 +55,31 @@ object Common {
     maybeColumn2: Option[String] = None,
     maybeColumn3: Option[String] = None,
     maybeColumn4: Option[String] = None,
-    maybeColumn5: Option[String] = None
+    maybeColumn5: Option[String] = None,
+    maybeColumn6: Option[String] = None,
+    maybeColumn7: Option[String] = None,
+    maybeColumn8: Option[String] = None,
+    maybeColumn9: Option[String] = None,
+    maybeColumn10: Option[String] = None,
   ) {
-    def extraColumns: Seq[String] =
-      Seq(maybeColumn1, maybeColumn2, maybeColumn3, maybeColumn4, maybeColumn5).flatten
+    def extraColumns: Seq[String] = {
+      val extras = Seq(
+        maybeColumn1,
+        maybeColumn2,
+        maybeColumn3,
+        maybeColumn4,
+        maybeColumn5,
+        maybeColumn6,
+        maybeColumn7,
+        maybeColumn8,
+        maybeColumn9,
+        maybeColumn10
+      )
+      if (extras.exists(_.isDefined))
+        extras.map(_.getOrElse(""))
+      else
+        Seq.empty
+    }
   }
   case class Line(maybeItem1: Option[Item], maybeItem2: Option[Item])
 
@@ -90,7 +111,12 @@ object Common {
         maybeColumn2 = parseOptional(line, 5),
         maybeColumn3 = parseOptional(line, 6),
         maybeColumn4 = parseOptional(line, 7),
-        maybeColumn5 = parseOptional(line, 8)
+        maybeColumn5 = parseOptional(line, 8),
+        maybeColumn6 = parseOptional(line, 9),
+        maybeColumn7 = parseOptional(line, 10),
+        maybeColumn8 = parseOptional(line, 11),
+        maybeColumn9 = parseOptional(line, 12),
+        maybeColumn10 = parseOptional(line, 13)
       )
     )
 
@@ -107,7 +133,12 @@ object Common {
     maybeColumn2: Option[String] = None,
     maybeColumn3: Option[String] = None,
     maybeColumn4: Option[String] = None,
-    maybeColumn5: Option[String] = None
+    maybeColumn5: Option[String] = None,
+    maybeColumn6: Option[String] = None,
+    maybeColumn7: Option[String] = None,
+    maybeColumn8: Option[String] = None,
+    maybeColumn9: Option[String] = None,
+    maybeColumn10: Option[String] = None
   ): Option[Item] =
     if (itemId.nonEmpty) {
       Some(
@@ -118,7 +149,12 @@ object Common {
           maybeColumn2,
           maybeColumn3,
           maybeColumn4,
-          maybeColumn5
+          maybeColumn5,
+          maybeColumn6,
+          maybeColumn7,
+          maybeColumn8,
+          maybeColumn9,
+          maybeColumn10
         )
       )
     } else {

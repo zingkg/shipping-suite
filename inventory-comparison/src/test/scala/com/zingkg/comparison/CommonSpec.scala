@@ -4,6 +4,14 @@ import org.scalatest.WordSpec
 import org.scalatest.MustMatchers._
 
 class CommonSpec extends WordSpec {
+  "Common.Item.extraColumns" should {
+    "return a sequence of extra columns if at least one of them are filled in" in {
+      val actual = Common.Item(itemId = "a", quantity = 2, maybeColumn1 = Some("a")).extraColumns
+      val expected = "a" +: (0 until 9).map(_ => "")
+      actual mustBe expected
+    }
+  }
+
   "Common.accumulateItems" should {
     "build two inventories" in {
       val actual = Common.accumulateItems(

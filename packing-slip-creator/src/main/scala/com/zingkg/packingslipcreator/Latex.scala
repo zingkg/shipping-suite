@@ -1,6 +1,12 @@
 package com.zingkg.packingslipcreator;
 
 object Latex {
+  def sanitizeInput(str: String): String =
+    str.replace("#", "\\#")
+      .replace("$", "\\$")
+      .replace("%", "\\%")
+      .replace("&", "\\&")
+
   def header: Seq[String] =
     Seq(
       "\\documentclass{article}",
@@ -21,7 +27,7 @@ object Latex {
             packingSlipStrings(right)
           ).flatten
         }.getOrElse(Seq.empty)
-        Seq("\\vbox{%") ++ leftString ++ rightStrings ++ Seq("}", "\\vspace{5em}")
+        Seq("\\vbox{%") ++ leftString ++ rightStrings ++ Seq("}", "\\vspace{3em}")
     }.toList
 
   def endDocument: String =
@@ -35,7 +41,7 @@ object Latex {
       latexCenter(packingSlip.poId, size),
       latexCenter(packingSlip.shipToName, size)
     )
-    val shipSpeed = packingSlip.maybeShipSpeed.map(latexCenter(_, size)).toSeq :+ "\\vspace{10em}"
+    val shipSpeed = packingSlip.maybeShipSpeed.map(latexCenter(_, size)).toSeq :+ "\\vspace{8em}"
 
     val baseItemRow = s"$size ${packingSlip.itemId} \\hfill ${packingSlip.quantity}"
     val itemRow = packingSlip.maybeCost.map { cost =>
@@ -106,21 +112,21 @@ case class PackingSlip(
 
 object PackingSlip {
   def fromTokens(tokens: Seq[String]): PackingSlip = {
-    val company = tokens.head
-    val poId = tokens(1)
-    val shipToName = tokens(2)
-    val maybeShipToAddress = parseOptional(tokens, position = 3)
-    val maybeShipToAddress2 = parseOptional(tokens, position = 4)
-    val maybeShipToCity = parseOptional(tokens, position = 5)
-    val maybeShipToState = parseOptional(tokens, position = 6)
-    val maybeShipToZip = parseOptional(tokens, position = 7)
-    val maybeShipToPhone = parseOptional(tokens, position = 8)
-    val itemId = tokens(9)
+    val company = Latex.sanitizeInput(tokens.head)
+    val poId = Latex.sanitizeInput(tokens(1))
+    val shipToName = Latex.sanitizeInput(tokens(2))
+    val maybeShipToAddress = parseOptional(tokens, position = 3).map(Latex.sanitizeInput)
+    val maybeShipToAddress2 = parseOptional(tokens, position = 4).map(Latex.sanitizeInput)
+    val maybeShipToCity = parseOptional(tokens, position = 5).map(Latex.sanitizeInput)
+    val maybeShipToState = parseOptional(tokens, position = 6).map(Latex.sanitizeInput)
+    val maybeShipToZip = parseOptional(tokens, position = 7).map(Latex.sanitizeInput)
+    val maybeShipToPhone = parseOptional(tokens, position = 8).map(Latex.sanitizeInput)
+    val itemId = Latex.sanitizeInput(tokens(9))
     val quantity = tokens(10).toInt
     val maybeCost = parseOptional(tokens, position = 11).map { cost =>
       MonetaryAmount.fromString(cost.trim)
     }
-    val maybeShipSpeed = parseOptional(tokens, position = 12)
+    val maybeShipSpeed = parseOptional(tokens, position = 12).map(Latex.sanitizeInput)
 
     PackingSlip(
       company,

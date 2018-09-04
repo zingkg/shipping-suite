@@ -1,6 +1,6 @@
 name := "packing-slip-creator"
 
-version := "0.7"
+version := "0.8"
 
 scalaVersion := "2.12.6"
 

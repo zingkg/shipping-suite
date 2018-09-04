@@ -37,6 +37,7 @@ object Main extends App {
     Latex.header ++
       Latex.generateLatex(
         lines.map(PackingSlip.fromTokens)
+          .groupBy(_.key)
           .sliding(2, 2)
           .map { window =>
             val left = window.head

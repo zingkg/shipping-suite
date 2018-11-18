@@ -41,7 +41,7 @@ object Main extends App {
           .sliding(2, 2)
           .map { window =>
             val left = window.head
-            val maybeRight = if (window.size > 1) Some(window.last) else None
+            val maybeRight = window.lastOption
             (left, maybeRight)
           }
       ) ++

@@ -119,7 +119,8 @@ case class PackingSlipKey(
   maybeShipToState: Option[String],
   maybeShipToZip: Option[String],
   maybeShipToPhone: Option[String],
-  maybeShipSpeed: Option[String])
+  maybeShipSpeed: Option[String]
+)
 
 case class PackingSlip(
   company: String,

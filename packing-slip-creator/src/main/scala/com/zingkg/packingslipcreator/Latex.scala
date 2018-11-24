@@ -18,18 +18,26 @@ object Latex {
   def generateLatex(
     packingSlipPairs: Iterator[((PackingSlipKey, Seq[PackingSlip]), (Option[(PackingSlipKey, Seq[PackingSlip])]))]
   ): Seq[String] =
-    packingSlipPairs.flatMap {
-      case ((leftKey, leftSlips), maybeRight) =>
-        val leftString = packingSlipStrings(leftKey, leftSlips)
-        val rightStrings = maybeRight.map {
-          case (rightKey, rightSlips) =>
-            Seq(
-              Seq("\\hfill"),
-              packingSlipStrings(rightKey, rightSlips)
-            ).flatten
-        }.getOrElse(Seq.empty)
-        Seq("\\vbox{%") ++ leftString ++ rightStrings ++ Seq("}", "\\vspace{3em}")
-    }.toList
+    packingSlipPairs
+      .map {
+        case ((leftKey, leftSlips), maybeRight) =>
+          val leftString = packingSlipStrings(leftKey, leftSlips)
+          val rightStrings = maybeRight.map {
+            case (rightKey, rightSlips) =>
+              Seq(
+                Seq("\\hfill"),
+                packingSlipStrings(rightKey, rightSlips)
+              ).flatten
+          }.getOrElse(Seq.empty)
+          Seq("\\vbox{%") ++ leftString ++ rightStrings ++ Seq("}", "\\vspace{3em}")
+      }
+      .grouped(2)
+      .flatMap { group =>
+        Seq("\\vspace*{\\fill}") ++
+          group.flatten ++
+          Seq("\\vspace*{\\fill}", "\\newpage")
+      }
+      .toList
 
   def endDocument: String =
     "\\end{document}"
@@ -58,14 +66,16 @@ object Latex {
   }
 
   private def packingSlipItem(packingSlip: PackingSlip): String = {
-    val size = "{\\Large"
-    val baseItemRow = s"$size ${packingSlip.itemId} \\hfill ${packingSlip.quantity}"
+    val size = "\\huge"
+    val baseItemRow = s"$size{${packingSlip.itemId} \\quad ${packingSlip.quantity}}"
     val itemRow = packingSlip.maybeCost.map { cost =>
-      baseItemRow + s" \\hfill \\$cost}"
-    }.getOrElse(baseItemRow + "}")
-    itemRow
+      baseItemRow + s" \\hfill \\Large{\\$cost}"
+    }.getOrElse(baseItemRow)
+    s"""\\hspace*{\\fill}%
+      |$itemRow
+      |\\hspace*{\\fill}%""".stripMargin
   }
-  
+
   private def latexCenter(string: String, size: String): String =
     s"$size \\begin{center}$string\\end{center}}"
 
@@ -88,7 +98,7 @@ object Latex {
 
 case class MonetaryAmount(cents: Long) {
   override def toString(): String = {
-    "$" + cents / 100 + "." + cents % 100
+    f"$$${cents / 100}%2d.${cents % 100}%02d"
   }
 }
 

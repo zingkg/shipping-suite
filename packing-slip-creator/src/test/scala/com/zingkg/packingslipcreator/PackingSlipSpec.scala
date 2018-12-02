@@ -1,13 +1,12 @@
 package com.zingkg.packingslipcreator
 
 import org.scalacheck.Gen
-import org.scalatest.{ MustMatchers, PrivateMethodTester, WordSpec }
+import org.scalatest.{ MustMatchers, WordSpec }
 import org.scalatest.prop.PropertyChecks
 
 class PackingSlipSpec
   extends WordSpec
   with MustMatchers
-  with PrivateMethodTester
   with PropertyChecks {
   "PackingSlip.key" should {
     "return a key based on select data members" in forAll(PackingSlipSpec.gen) { slip =>
@@ -31,21 +30,16 @@ class PackingSlipSpec
   }
 
   "PackingSlip.parseOptional" should {
-    def parseOptional(tokens: Seq[String], position: Int): Option[String] =
-      PackingSlip.invokePrivate(
-        PrivateMethod[Option[String]](Symbol("parseOptional"))(tokens, position)
-      )
-
     "return None if the token is out of position" in {
-      parseOptional(Seq("1", "2", "3"), position = 3) mustBe None
+      PackingSlip.parseOptional(Seq("1", "2", "3"), position = 3) mustBe None
     }
 
     "return None if the position is an empty string" in {
-      parseOptional(Seq("", "2", "3"), position = 0) mustBe None
+      PackingSlip.parseOptional(Seq("", "2", "3"), position = 0) mustBe None
     }
 
     "return Some if the position is present and non-empty" in {
-      parseOptional(Seq("", "2", "3"), position = 1) mustBe Some("2")
+      PackingSlip.parseOptional(Seq("", "2", "3"), position = 1) mustBe Some("2")
     }
   }
 }

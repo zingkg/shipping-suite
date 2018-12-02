@@ -1,4 +1,4 @@
-package com.zingkg.packingslipcreator;
+package com.zingkg.packingslipcreator
 
 object Latex {
   def sanitizeInput(str: String): String =
@@ -76,7 +76,7 @@ object Latex {
       |\\hspace*{\\fill}%""".stripMargin
   }
 
-  private def latexCenter(string: String, size: String): String =
+  private[packingslipcreator] def latexCenter(string: String, size: String): String =
     s"$size \\begin{center}$string\\end{center}}"
 
   private def shippingAddress(packingSlipKey: PackingSlipKey): Seq[String] = {
@@ -197,7 +197,7 @@ object PackingSlip {
     )
   }
 
-  private def parseOptional(tokens: Seq[String], position: Int): Option[String] =
+  private[packingslipcreator] def parseOptional(tokens: Seq[String], position: Int): Option[String] =
     if (tokens.length <= position || tokens(position).isEmpty)
       None
     else

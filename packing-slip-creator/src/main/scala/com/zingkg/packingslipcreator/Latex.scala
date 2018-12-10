@@ -16,53 +16,49 @@ object Latex {
     )
 
   def generateLatex(
-    packingSlipPairs: Iterator[((PackingSlipKey, Seq[PackingSlip]), (Option[(PackingSlipKey, Seq[PackingSlip])]))]
+    packingSlipPairs: Iterator[(PackingSlip, Option[PackingSlip])]
   ): Seq[String] =
     packingSlipPairs
       .map {
-        case ((leftKey, leftSlips), maybeRight) =>
-          val leftString = packingSlipStrings(leftKey, leftSlips)
-          val rightStrings = maybeRight.map {
-            case (rightKey, rightSlips) =>
-              Seq(
-                Seq("\\hfill"),
-                packingSlipStrings(rightKey, rightSlips)
-              ).flatten
+        case (leftSlip, maybeRight) =>
+          val leftString = packingSlipStrings(leftSlip)
+          val rightString = maybeRight.map { rightSlip =>
+            Seq(
+              Seq("\\hfill"),
+              packingSlipStrings(rightSlip)
+            ).flatten
           }.getOrElse(Seq.empty)
-          Seq("\\vbox{%") ++ leftString ++ rightStrings ++ Seq("}", "\\vspace{3em}")
+          Seq("\\vbox{%") ++ leftString ++ rightString ++ Seq("}", "\\vspace{3em}")
       }
       .grouped(2)
-      .flatMap { group =>
-        Seq("\\vspace*{\\fill}") ++
-          group.flatten ++
-          Seq("\\vspace*{\\fill}", "\\newpage")
+      .flatMap {
+        case Seq(head) =>
+          head
+
+        case group =>
+          Seq("\\vspace*{\\fill}") ++
+            group.flatten ++
+            Seq("\\vspace*{\\fill}", "\\newpage")
       }
       .toList
 
   def endDocument: String =
     "\\end{document}"
 
-  private def packingSlipStrings(
-    packingSlipKey: PackingSlipKey,
-    packingSlips: Seq[PackingSlip],
-  ): Seq[String] = {
+  private def packingSlipStrings(packingSlip: PackingSlip): Seq[String] = {
     val size = "{\\Large"
     val header = Seq(
       "\\begin{minipage}{0.45\\textwidth}",
-      s"$size \\begin{flushright}${packingSlipKey.company}\\end{flushright}}",
-      latexCenter(packingSlipKey.poId, size),
-      latexCenter(packingSlipKey.shipToName, size)
+      s"$size \\begin{flushright}${packingSlip.company}\\end{flushright}}",
+      latexCenter(packingSlip.poId, size),
+      latexCenter(packingSlip.shipToName, size)
     )
-    val emSpaceBetweenSlips =
-      if (packingSlips.size > 1)
-        "\\vspace{2em}"
-      else
-        "\\vspace{8em}"
-    val shipSpeed = packingSlipKey.maybeShipSpeed.map(latexCenter(_, size)).toSeq :+ emSpaceBetweenSlips
+    val shipSpeed = packingSlip.maybeShipSpeed.map(latexCenter(_, size)).toSeq :+ "\\vspace{6em}"
 
-    val packingSlipItems = packingSlips.map(packingSlipItem(_)).mkString("\\\\")
-
-    header ++ shippingAddress(packingSlipKey) ++ shipSpeed ++ Seq(packingSlipItems, "\\end{minipage}%")
+    header ++
+      shippingAddress(packingSlip) ++
+      shipSpeed ++
+      Seq(packingSlipItem(packingSlip), "\\end{minipage}%")
   }
 
   private def packingSlipItem(packingSlip: PackingSlip): String = {
@@ -79,19 +75,19 @@ object Latex {
   private[packingslipcreator] def latexCenter(string: String, size: String): String =
     s"$size \\begin{center}$string\\end{center}}"
 
-  private def shippingAddress(packingSlipKey: PackingSlipKey): Seq[String] = {
+  private def shippingAddress(packingSlip: PackingSlip): Seq[String] = {
     val size = "{\\small"
     Seq(
-      packingSlipKey.maybeShipToAddress.map { address =>
-        latexCenter(s"$address ${packingSlipKey.maybeShipToAddress2.getOrElse("")}", size)
+      packingSlip.maybeShipToAddress.map { address =>
+        latexCenter(s"$address ${packingSlip.maybeShipToAddress2.getOrElse("")}", size)
       },
-      packingSlipKey.maybeShipToCity.map { city =>
+      packingSlip.maybeShipToCity.map { city =>
         latexCenter(
-          s"$city, ${packingSlipKey.maybeShipToState.getOrElse("")} ${packingSlipKey.maybeShipToZip.getOrElse("")}",
+          s"$city, ${packingSlip.maybeShipToState.getOrElse("")} ${packingSlip.maybeShipToZip.getOrElse("")}",
           size
         )
       },
-      packingSlipKey.maybeShipToPhone.map(latexCenter(_, size))
+      packingSlip.maybeShipToPhone.map(latexCenter(_, size))
     ).flatten
   }
 }
@@ -119,19 +115,6 @@ object MonetaryAmount {
   }
 }
 
-case class PackingSlipKey(
-  company: String,
-  poId: String,
-  shipToName: String,
-  maybeShipToAddress: Option[String],
-  maybeShipToAddress2: Option[String],
-  maybeShipToCity: Option[String],
-  maybeShipToState: Option[String],
-  maybeShipToZip: Option[String],
-  maybeShipToPhone: Option[String],
-  maybeShipSpeed: Option[String]
-)
-
 case class PackingSlip(
   company: String,
   poId: String,
@@ -146,21 +129,7 @@ case class PackingSlip(
   quantity: Int,
   maybeCost: Option[MonetaryAmount],
   maybeShipSpeed: Option[String]
-) {
-  def key: PackingSlipKey =
-    PackingSlipKey(
-      company = company,
-      poId = poId,
-      shipToName = shipToName,
-      maybeShipToAddress = maybeShipToAddress,
-      maybeShipToAddress2 = maybeShipToAddress2,
-      maybeShipToCity = maybeShipToCity,
-      maybeShipToState = maybeShipToState,
-      maybeShipToZip = maybeShipToZip,
-      maybeShipToPhone = maybeShipToPhone,
-      maybeShipSpeed = maybeShipSpeed
-    )
-}
+)
 
 object PackingSlip {
   def fromTokens(tokens: Seq[String]): PackingSlip = {

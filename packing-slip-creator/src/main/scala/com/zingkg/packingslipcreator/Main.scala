@@ -37,12 +37,13 @@ object Main extends App {
     Latex.header ++
       Latex.generateLatex(
         lines.map(PackingSlip.fromTokens)
-          .groupBy(_.key)
-          .sliding(2, 2)
-          .map { window =>
-            val left = window.head
-            val maybeRight = window.lastOption
-            (left, maybeRight)
+          .grouped(2)
+          .map {
+            case Seq(head) =>
+              (head, None)
+
+            case Seq(head, last) =>
+              (head, Some(last))
           }
       ) ++
       Seq(Latex.endDocument)

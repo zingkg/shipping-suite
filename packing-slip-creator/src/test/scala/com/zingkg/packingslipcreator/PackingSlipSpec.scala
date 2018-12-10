@@ -8,24 +8,6 @@ class PackingSlipSpec
   extends WordSpec
   with MustMatchers
   with PropertyChecks {
-  "PackingSlip.key" should {
-    "return a key based on select data members" in forAll(PackingSlipSpec.gen) { slip =>
-      val expected = PackingSlipKey(
-        company = slip.company,
-        poId = slip.poId,
-        shipToName = slip.shipToName,
-        maybeShipToAddress = slip.maybeShipToAddress,
-        maybeShipToAddress2 = slip.maybeShipToAddress2,
-        maybeShipToCity = slip.maybeShipToCity,
-        maybeShipToState = slip.maybeShipToState,
-        maybeShipToZip = slip.maybeShipToZip,
-        maybeShipToPhone = slip.maybeShipToPhone,
-        maybeShipSpeed = slip.maybeShipSpeed
-      )
-      slip.key mustBe expected
-    }
-  }
-
   "PackingSlip.fromTokens" should {
   }
 

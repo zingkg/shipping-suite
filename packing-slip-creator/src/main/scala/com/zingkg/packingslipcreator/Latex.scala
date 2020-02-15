@@ -15,7 +15,16 @@ object Latex {
       "\\begin{document}"
     )
 
-  def generateLatex(
+  def groupSlips(slips: Seq[PackingSlip]): (PackingSlip, Option[PackingSlip]) =
+    slips match {
+      case Seq(head) =>
+        head -> None
+
+      case Seq(head, last) =>
+        head -> Some(last)
+    }
+
+  def buildLatex(
     packingSlipPairs: Iterator[(PackingSlip, Option[PackingSlip])]
   ): Seq[String] =
     packingSlipPairs

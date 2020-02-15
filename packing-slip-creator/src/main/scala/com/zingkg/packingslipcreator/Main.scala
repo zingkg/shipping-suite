@@ -35,16 +35,10 @@ object Main extends App {
 
   private def processLines(lines: Seq[Seq[String]]): Seq[String] =
     Latex.header ++
-      Latex.generateLatex(
+      Latex.buildLatex(
         lines.map(PackingSlip.fromTokens)
           .grouped(2)
-          .map {
-            case Seq(head) =>
-              (head, None)
-
-            case Seq(head, last) =>
-              (head, Some(last))
-          }
+          .map(Latex.groupSlips)
       ) ++
       Seq(Latex.endDocument)
 

@@ -1,14 +1,63 @@
 package com.zingkg.packingslipcreator
 
 import org.scalacheck.Gen
-import org.scalatest.{ MustMatchers, WordSpec }
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class PackingSlipSpec
-  extends WordSpec
-  with MustMatchers
-  with PropertyChecks {
+  extends AnyWordSpec
+  with Matchers
+  with ScalaCheckPropertyChecks {
   "PackingSlip.fromTokens" should {
+    "be a correct packing slip" in {
+      val company = "asdf"
+      val poId = "fdsa"
+      val shipToName = "Sp"
+      val shipToAddress = "addr 1"
+      val shipToAddress2 = ""
+      val shipToCity = "fake town"
+      val shipToState = "WA"
+      val shipToZip = "11111"
+      val shipToPhone = "11122233333"
+      val itemId = "zxcv"
+      val quantity = 12
+      val cost = MonetaryAmount(9800)
+      val shipSpeed = "fast"
+      val actual = PackingSlip.fromTokens(
+        Seq(
+          company,
+          poId,
+          shipToName,
+          shipToAddress,
+          shipToAddress2,
+          shipToCity,
+          shipToState,
+          shipToZip,
+          shipToPhone,
+          itemId,
+          quantity.toString,
+          cost.toString,
+          shipSpeed
+        )
+      )
+      val expected = PackingSlip(
+        company = company,
+        poId = poId,
+        shipToName = shipToName,
+        maybeShipToAddress = Some(shipToAddress),
+        maybeShipToAddress2 = None,
+        maybeShipToCity = Some(shipToCity),
+        maybeShipToState = Some(shipToState),
+        maybeShipToZip = Some(shipToZip),
+        maybeShipToPhone = Some(shipToPhone),
+        itemId = itemId,
+        quantity = quantity,
+        maybeCost = Some(cost),
+        maybeShipSpeed = Some(shipSpeed)
+      )
+      actual mustBe expected
+    }
   }
 
   "PackingSlip.parseOptional" should {
@@ -24,37 +73,4 @@ class PackingSlipSpec
       PackingSlip.parseOptional(Seq("", "2", "3"), position = 1) mustBe Some("2")
     }
   }
-}
-
-object PackingSlipSpec {
-  def gen: Gen[PackingSlip] =
-    for {
-      company <- Gen.asciiStr
-      poId <- Gen.numStr
-      shipToName <- Gen.asciiStr
-      maybeShipToAddress <- Gen.option(Gen.alphaStr)
-      maybeShipToAddress2 <- Gen.option(Gen.alphaStr)
-      maybeShipToCity <- Gen.option(Gen.alphaStr)
-      maybeShipToState <- Gen.option(Gen.alphaStr)
-      maybeShipToZip <- Gen.option(Gen.numStr)
-      maybeShipToPhone <- Gen.option(Gen.numStr)
-      itemId <- Gen.asciiStr
-      quantity <- Gen.chooseNum(0, 100)
-      maybeCost <- Gen.option(MonetaryAmountSpec.gen)
-      maybeShipSpeed <- Gen.option(Gen.alphaStr)
-    } yield
-      PackingSlip(
-        company = company,
-        poId = poId,
-        shipToName = shipToName,
-        maybeShipToAddress = maybeShipToAddress,
-        maybeShipToAddress2 = maybeShipToAddress2,
-        maybeShipToCity = maybeShipToCity,
-        maybeShipToState = maybeShipToState,
-        maybeShipToZip = maybeShipToZip,
-        maybeShipToPhone = maybeShipToPhone,
-        itemId = itemId,
-        quantity = quantity,
-        maybeCost = maybeCost,
-        maybeShipSpeed = maybeShipSpeed)
 }

@@ -1,10 +1,11 @@
 package com.zingkg.packingslipcreator
 
 import org.scalacheck.Gen
-import org.scalatest.{ MustMatchers, WordSpec }
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class LatexSpec extends WordSpec with MustMatchers with PropertyChecks {
+class LatexSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks {
   "Latex.sanitizeInput" should {
     "replace the '#' character with '\\#'" in {
       Latex.sanitizeInput("#") mustBe "\\#"
@@ -123,8 +124,5 @@ class LatexSpec extends WordSpec with MustMatchers with PropertyChecks {
     "return the center in latex string" in {
       Latex.latexCenter("123", "456") mustBe s"456 \\begin{center}123\\end{center}}"
     }
-  }
-
-  "Latex.shippingAddress" should {
   }
 }

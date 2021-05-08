@@ -52,9 +52,9 @@ object Latex {
         s"{${fontSizes(headerSize)} \\begin{center}\\textbf{${stickyLabel.centerHeader}}\\end{center}",
         "",
         s"{${fontSizes(bodySize)}",
-        s"Recipient: ${stickyLabel.recipient}",
-        "",
         s"PO: ${stickyLabel.po}",
+        "",
+        s"Recipient: ${stickyLabel.recipient}",
         "",
         "Carton:",
         "",
@@ -68,8 +68,8 @@ object Latex {
 }
 
 case class StickyLabel(
-  recipient: String,
   po: String,
+  recipient: String,
   cartons: Int,
   centerHeader: String
 ) {
@@ -79,8 +79,8 @@ case class StickyLabel(
 object StickyLabel {
   def fromTokens(tokens: Seq[String]): StickyLabel = {
     StickyLabel(
-      recipient = Latex.sanitizeInput(tokens.head),
-      po = Latex.sanitizeInput(tokens(1)),
+      po = Latex.sanitizeInput(tokens.head),
+      recipient = Latex.sanitizeInput(tokens(1)),
       cartons = tokens(2).toInt,
       centerHeader = tokens(3)
     )

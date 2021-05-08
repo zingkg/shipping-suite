@@ -8,12 +8,12 @@ class StickyLabelSpec extends AnyWordSpec with Matchers {
   "StickyLabel.fromTokens" should {
     "be correct from the tokens" in {
       val expected = StickyLabel(
-        recipient = "asdf",
         po = "1234",
+        recipient = "asdf",
         cartons = 3,
         centerHeader = "faire"
       )
-      StickyLabel.fromTokens(Seq("asdf", "1234", "3", "faire")) mustBe expected
+      StickyLabel.fromTokens(Seq("1234", "asdf", "3", "faire")) mustBe expected
     }
 
     "throw an exception if the tokens are not present" in {

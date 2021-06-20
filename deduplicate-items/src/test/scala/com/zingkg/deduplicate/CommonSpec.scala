@@ -1,9 +1,9 @@
 package com.zingkg.deduplicate
 
-import org.scalatest.WordSpec
-import org.scalatest.MustMatchers._
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.must.Matchers
 
-class CommonSpec extends WordSpec {
+class CommonSpec extends AnyWordSpec with Matchers {
   "Common.accumulateItems" should {
     "generate an empty map with no items" in {
       Common.accumulateItems(Seq.empty) mustBe Map.empty

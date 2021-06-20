@@ -2,48 +2,51 @@ package com.zingkg.comparison
 
 import com.github.tototoshi.csv.CSVReader
 import com.github.tototoshi.csv.CSVWriter
+import com.github.tototoshi.csv.defaultCSVFormat
 import scala.util.Try
 
-object Main extends App {
+object Main {
   case class Config(inputFile: String = "", maybeOutputFile: Option[String] = None)
 
-  val parser = new scopt.OptionParser[Config]("deduplicate") {
-    opt[String]('i', "input-file")
-      .required()
-      .text("input file to parse")
-      .action { (inputFile, config) =>
-        config.copy(inputFile = inputFile)
-      }
+  def main(args: Array[String]): Unit = {
+    val parser = new scopt.OptionParser[Config]("deduplicate") {
+      opt[String]('i', "input-file")
+        .required()
+        .text("input file to parse")
+        .action { (inputFile, config) =>
+          config.copy(inputFile = inputFile)
+        }
 
-    opt[String]('o', "output-file")
-      .text("output file to save to")
-      .action { (outputFile, config) =>
-        config.copy(maybeOutputFile = Some(outputFile))
-      }
+      opt[String]('o', "output-file")
+        .text("output file to save to")
+        .action { (outputFile, config) =>
+          config.copy(maybeOutputFile = Some(outputFile))
+        }
+    }
+
+    parser.parse(args, Config()).foreach { config =>
+      val lines = readFile(config.inputFile)
+      val processedLines = lines.map(Common.processLine)
+      val (inventory1, inventory2) = Common.accumulateItems(processedLines)
+      val matchingLines = Common.assembleMatchingLines(inventory1, inventory2).sortBy(
+        _.maybeItem1.map(_.itemId).getOrElse("~~~~~")
+      )
+      val unprocessedLines = matchingLines.map(Common.unprocessLine)
+      writeFile(config.maybeOutputFile.getOrElse("a.csv"), unprocessedLines)
+    }
   }
 
-  def readFile(filename: String): Seq[Seq[String]] = {
+  private def readFile(filename: String): Seq[Seq[String]] = {
     val reader = CSVReader.open(new java.io.File(filename))
     val lines = reader.all().drop(1)
     reader.close()
     lines
   }
 
-  def writeFile(filename: String, untypedLines: Seq[Seq[String]]): Unit = {
+  private def writeFile(filename: String, untypedLines: Seq[Seq[String]]): Unit = {
     val writer = CSVWriter.open(new java.io.File(filename))
     writer.writeAll(untypedLines)
     writer.close()
-  }
-
-  parser.parse(args, Config()).foreach { config =>
-    val lines = readFile(config.inputFile)
-    val processedLines = lines.map(Common.processLine)
-    val (inventory1, inventory2) = Common.accumulateItems(processedLines)
-    val matchingLines = Common.assembleMatchingLines(inventory1, inventory2).sortBy(
-      _.maybeItem1.map(_.itemId).getOrElse("~~~~~")
-    )
-    val unprocessedLines = matchingLines.map(Common.unprocessLine)
-    writeFile(config.maybeOutputFile.getOrElse("a.csv"), unprocessedLines)
   }
 }
 
@@ -177,20 +180,20 @@ object Common {
   ): Seq[Line] =
     if (inventory1.size >= inventory2.size) {
       val keysMissingInInventory = inventory2.keySet -- inventory1.keySet
-      val matchingLines = inventory1.mapValues { item =>
+      val matchingLines = inventory1.view.mapValues { item =>
         Line(maybeItem1 = Some(item), maybeItem2 = inventory2.get(item.itemId))
-      }.values.toSeq
+      }.toMap.values.toSeq
       matchingLines ++
-        inventory2.filterKeys(keysMissingInInventory.contains(_)).mapValues { item =>
+        inventory2.view.filterKeys(keysMissingInInventory.contains(_)).mapValues { item =>
           Line(maybeItem1 = None, maybeItem2 = Some(item))
         }.values.toSeq
     } else {
       val keysMissingInInventory = inventory1.keySet -- inventory2.keySet
-      val matchingLines = inventory2.mapValues { item =>
+      val matchingLines = inventory2.view.mapValues { item =>
         Line(maybeItem1 = inventory1.get(item.itemId), maybeItem2 = Some(item))
-      }.values.toSeq
+      }.toMap.values.toSeq
       matchingLines ++
-        inventory1.filterKeys(keysMissingInInventory.contains(_)).mapValues { item =>
+        inventory1.view.filterKeys(keysMissingInInventory.contains(_)).mapValues { item =>
           Line(maybeItem1 = Some(item), maybeItem2 = None)
         }.values.toSeq
     }

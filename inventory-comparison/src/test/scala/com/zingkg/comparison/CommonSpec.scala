@@ -1,9 +1,9 @@
 package com.zingkg.comparison
 
-import org.scalatest.WordSpec
-import org.scalatest.MustMatchers._
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.must.Matchers
 
-class CommonSpec extends WordSpec {
+class CommonSpec extends AnyWordSpec with Matchers {
   "Common.Item.extraColumns" should {
     "return a sequence of extra columns if at least one of them are filled in" in {
       val actual = Common.Item(itemId = "a", quantity = 2, maybeColumn1 = Some("a")).extraColumns

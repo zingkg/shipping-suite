@@ -1,15 +1,17 @@
-name := "packing-slip-creator"
+lazy val root = project
+  .in(file("."))
+  .settings(
+    name := "packing-slip-creator",
+    description := "Packing Slip Creator",
+    version := "0.11",
+    scalaVersion := "3.0.0",
+    Compile / mainClass := Some("com.zingkg.packingslipcreator.Main"),
+    libraryDependencies ++= Seq(
+      "com.github.scopt" %% "scopt" % "4.0.1",
+      "com.github.tototoshi" %% "scala-csv" % "1.3.8",
+      "org.scalactic" %% "scalactic" % "3.2.9" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.9" % Test,
+      "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test"
+    )
+  )
 
-version := "0.10"
-
-scalaVersion := "2.13.5"
-
-mainClass in Compile := Some("com.zingkg.packingslipcreator.Main")
-
-libraryDependencies ++= Seq(
-  "com.github.scopt" %% "scopt" % "4.0.1",
-  "com.github.tototoshi" %% "scala-csv" % "1.3.7",
-  "org.scalactic" %% "scalactic" % "3.2.5" % Test,
-  "org.scalatest" %% "scalatest" % "3.2.5" % Test,
-  "org.scalatestplus" %% "scalacheck-1-15" % "3.2.5.0" % "test"
-)

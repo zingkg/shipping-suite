@@ -7,12 +7,6 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
   "ShippingLabel.fromTokens" should {
     "be correct from the tokens" in {
       val expected = ShippingLabel(
-        fontSize = 22,
-        sourceName = "Src name",
-        sourceAddress = "Src addr",
-        sourceCity = "Src city",
-        sourceState = "Src state",
-        sourceZipCode = "Src zip",
         destinationName = "Dest name",
         destinationAddress = "Dest addr",
         destinationCity = "Dest city",
@@ -21,18 +15,18 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
         maybeDestinationPO = Some("Dest po"),
         maybeDestinationDept = Some("Dest dept"),
         itemNumber = "Item num",
-        itemDetails = "Item det",
-        maybeItemNotes = Some("Item notes"),
-        itemBoxes = 10
+        casePack = "Item det",
+        maybeTotalPieces = Some("Item notes"),
+        itemBoxes = 10,
+        sourceName = "Src name",
+        sourceAddress = "Src addr",
+        sourceCity = "Src city",
+        sourceState = "Src state",
+        sourceZipCode = "Src zip",
+        fontSize = 22
       )
       val actual = ShippingLabel.fromTokens(
         Seq(
-          "22",
-          "Src name",
-          "Src addr",
-          "Src city",
-          "Src state",
-          "Src zip",
           "Dest name",
           "Dest addr",
           "Dest city",
@@ -43,7 +37,13 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
           "Item num",
           "Item det",
           "Item notes",
-          "10"
+          "10",
+          "Src name",
+          "Src addr",
+          "Src city",
+          "Src state",
+          "Src zip",
+          "22"
         )
       )
       actual mustBe expected
@@ -51,12 +51,6 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
 
     "be correct with nones from the tokens" in {
       val expected = ShippingLabel(
-        fontSize = 22,
-        sourceName = "Src name",
-        sourceAddress = "Src addr",
-        sourceCity = "Src city",
-        sourceState = "Src state",
-        sourceZipCode = "Src zip",
         destinationName = "Dest name",
         destinationAddress = "Dest addr",
         destinationCity = "Dest city",
@@ -65,18 +59,18 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
         maybeDestinationPO = None,
         maybeDestinationDept = None,
         itemNumber = "Item num",
-        itemDetails = "Item det",
-        maybeItemNotes = None,
-        itemBoxes = 10
+        casePack = "Item det",
+        maybeTotalPieces = None,
+        itemBoxes = 10,
+        sourceName = "Src name",
+        sourceAddress = "Src addr",
+        sourceCity = "Src city",
+        sourceState = "Src state",
+        sourceZipCode = "Src zip",
+        fontSize = 22
       )
       val actual = ShippingLabel.fromTokens(
         Seq(
-          "22",
-          "Src name",
-          "Src addr",
-          "Src city",
-          "Src state",
-          "Src zip",
           "Dest name",
           "Dest addr",
           "Dest city",
@@ -87,7 +81,13 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
           "Item num",
           "Item det",
           "",
-          "10"
+          "10",
+          "Src name",
+          "Src addr",
+          "Src city",
+          "Src state",
+          "Src zip",
+          "22"
         )
       )
       actual mustBe expected
@@ -101,12 +101,6 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
       intercept[AssertionError](
         ShippingLabel.fromTokens(
           Seq(
-            "-11",
-            "Src name",
-            "Src addr",
-            "Src city",
-            "Src state",
-            "Src zip",
             "Dest name",
             "Dest addr",
             "Dest city",
@@ -117,7 +111,13 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
             "Item num",
             "Item det",
             "Item notes",
-            "10"
+            "10",
+            "Src name",
+            "Src addr",
+            "Src city",
+            "Src state",
+            "Src zip",
+            "-11"
           )
         )
       )
@@ -127,12 +127,6 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
       intercept[AssertionError](
         ShippingLabel.fromTokens(
           Seq(
-            "22",
-            "Src name",
-            "Src addr",
-            "Src city",
-            "Src state",
-            "Src zip",
             "Dest name",
             "Dest addr",
             "Dest city",
@@ -143,7 +137,13 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
             "Item num",
             "Item det",
             "Item notes",
-            "-1"
+            "-1",
+            "Src name",
+            "Src addr",
+            "Src city",
+            "Src state",
+            "Src zip",
+            "22"
           )
         )
       )

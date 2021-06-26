@@ -6,6 +6,7 @@ object Latex {
       .replace("$", "\\$")
       .replace("%", "\\%")
       .replace("&", "\\&")
+      .replace("’", "'")
 
   def header: Seq[String] =
     Seq(
@@ -41,15 +42,15 @@ object Latex {
         s"${shippingLabel.sourceName} & ${shippingLabel.destinationName} \\\\",
         s"\\multicolumn{1}{l}{${shippingLabel.sourceAddress}} & \\multicolumn{1}{l}{${shippingLabel.destinationAddress}} \\\\",
         s"${shippingLabel.sourceCity}, ${shippingLabel.sourceState} ${shippingLabel.sourceZipCode} & ${shippingLabel.destinationCity}, ${shippingLabel.destinationState} ${shippingLabel.destinationZipCode} \\\\",
-        s"Item \\#${shippingLabel.itemNumber} & ${shippingLabel.itemDetails} \\\\"
+        s"Item \\#${shippingLabel.itemNumber} & ${shippingLabel.casePack} \\\\"
       )
-      val itemNotesSeq = shippingLabel.maybeItemNotes.map { itemNotes =>
-        Seq(s"& $itemNotes \\\\")
+      val itemNotesSeq = shippingLabel.maybeTotalPieces.map { totalPieces =>
+        Seq(s"& $totalPieces \\\\")
       }.getOrElse(Seq.empty)
       val destHeader = Seq(
         "\\end{tabularx}",
         "",
-        "\\vspace{0.5pc}",
+        "\\vspace{0.1pc}"
       )
       val poSeq = shippingLabel.maybeDestinationPO.map { po =>
         Seq(s"P/O: $po \\\\")
@@ -59,12 +60,11 @@ object Latex {
       }.getOrElse(Seq.empty)
       val poOrDeptEnd =
         if (poSeq.nonEmpty || deptSeq.nonEmpty)
-          Seq("\\vspace{5pc}")
+          Seq("\\vspace{0.1pc}")
         else
           Seq.empty
       val end = Seq(
         s"Box \\hspace{4pc} $i\\hspace{4pc} OF \\hspace{4pc} ${shippingLabel.itemBoxes}",
-        "\\noindent\\makebox[\\linewidth]{\\rule{\\paperwidth}{0.4pt}}",
         "\\end{center}",
         "}",
         ""
@@ -78,12 +78,6 @@ object Latex {
 }
 
 case class ShippingLabel(
-  fontSize: Int,
-  sourceName: String,
-  sourceAddress: String,
-  sourceCity: String,
-  sourceState: String,
-  sourceZipCode: String,
   destinationName: String,
   destinationAddress: String,
   destinationCity: String,
@@ -92,9 +86,15 @@ case class ShippingLabel(
   maybeDestinationPO: Option[String],
   maybeDestinationDept: Option[String],
   itemNumber: String,
-  itemDetails: String,
-  maybeItemNotes: Option[String],
-  itemBoxes: Int
+  casePack: String,
+  maybeTotalPieces: Option[String],
+  itemBoxes: Int,
+  sourceName: String,
+  sourceAddress: String,
+  sourceCity: String,
+  sourceState: String,
+  sourceZipCode: String,
+  fontSize: Int
 ) {
   assert(fontSize > 0, "Font size must be positive")
   assert(itemBoxes > 0, "Item boxes must be positive")
@@ -103,23 +103,23 @@ case class ShippingLabel(
 object ShippingLabel {
   def fromTokens(tokens: Seq[String]): ShippingLabel =
     ShippingLabel(
-      fontSize = Latex.sanitizeInput(tokens(0)).toInt,
-      sourceName = Latex.sanitizeInput(tokens(1)),
-      sourceAddress = Latex.sanitizeInput(tokens(2)),
-      sourceCity = Latex.sanitizeInput(tokens(3)),
-      sourceState = Latex.sanitizeInput(tokens(4)),
-      sourceZipCode = Latex.sanitizeInput(tokens(5)),
-      destinationName = Latex.sanitizeInput(tokens(6)),
-      destinationAddress = Latex.sanitizeInput(tokens(7)),
-      destinationCity = Latex.sanitizeInput(tokens(8)),
-      destinationState = Latex.sanitizeInput(tokens(9)),
-      destinationZipCode = Latex.sanitizeInput(tokens(10)),
-      maybeDestinationPO = parseOptional(tokens, 11),
-      maybeDestinationDept = parseOptional(tokens, 12),
-      itemNumber = Latex.sanitizeInput(tokens(13)),
-      itemDetails = Latex.sanitizeInput(tokens(14)),
-      maybeItemNotes = parseOptional(tokens, 15),
-      itemBoxes = Latex.sanitizeInput(tokens(16)).toInt
+      destinationName = Latex.sanitizeInput(tokens(0)),
+      destinationAddress = Latex.sanitizeInput(tokens(1)),
+      destinationCity = Latex.sanitizeInput(tokens(2)),
+      destinationState = Latex.sanitizeInput(tokens(3)),
+      destinationZipCode = Latex.sanitizeInput(tokens(4)),
+      maybeDestinationPO = parseOptional(tokens, 5),
+      maybeDestinationDept = parseOptional(tokens, 6),
+      itemNumber = Latex.sanitizeInput(tokens(7)),
+      casePack = Latex.sanitizeInput(tokens(8)),
+      maybeTotalPieces = parseOptional(tokens, 9),
+      itemBoxes = Latex.sanitizeInput(tokens(10)).toInt,
+      sourceName = Latex.sanitizeInput(tokens(11)),
+      sourceAddress = Latex.sanitizeInput(tokens(12)),
+      sourceCity = Latex.sanitizeInput(tokens(13)),
+      sourceState = Latex.sanitizeInput(tokens(14)),
+      sourceZipCode = Latex.sanitizeInput(tokens(15)),
+      fontSize = Latex.sanitizeInput(tokens(16)).toInt
     )
 
   private def parseOptional(tokens: Seq[String], position: Int): Option[String] =

@@ -3,7 +3,7 @@ lazy val root = project
   .settings(
     name := "packing-slip-creator",
     description := "Packing Slip Creator",
-    version := "0.11",
+    version := "0.12",
     scalaVersion := "3.0.0",
     Compile / mainClass := Some("com.zingkg.packingslipcreator.Main"),
     libraryDependencies ++= Seq(
@@ -14,4 +14,3 @@ lazy val root = project
       "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test"
     )
   )
-

@@ -2,8 +2,14 @@ package com.zingkg.stickylabelcreator
 
 import com.github.tototoshi.csv.CSVReader
 import com.github.tototoshi.csv.defaultCSVFormat
+import scala.util.{Failure, Success, Try}
 
 object Main {
+  class ParsingException(exception: Throwable, line: Long) extends Exception {
+    override def toString: String =
+      s"$exception occured on line $line"
+  }
+
   case class Config(inputFile: String = "", maybeOutputFile: Option[String] = None)
 
   def main(args: Array[String]): Unit = {
@@ -24,7 +30,21 @@ object Main {
 
     parser.parse(args, Config()).foreach { config =>
       val lines = readFile(config.inputFile)
-      val latex = processLines(lines)
+      val processedLines = lines.map(line => Try(StickyLabel.fromTokens(line))).zipWithIndex
+      val failures = processedLines.collect {
+        case (Failure(e), x) =>
+          Failure(new ParsingException(e, x + 1))
+      }
+      if (failures.nonEmpty) {
+        val failuresString = failures.map(_.toString).mkString("\n")
+        throw new RuntimeException(s"Failed to parse lines:\n$failuresString")
+      }
+
+      val successes = processedLines.collect {
+        case (Success(x), _) =>
+          x
+      }
+      val latex = processLines(successes)
       writeFile(latex, config.maybeOutputFile.getOrElse("a.tex"))
     }
   }
@@ -36,9 +56,9 @@ object Main {
     lines
   }
 
-  private def processLines(lines: Seq[Seq[String]]): Seq[String] =
+  private def processLines(labels: Seq[StickyLabel]): Seq[String] =
     Latex.header ++
-      Latex.buildLatex(lines.map(StickyLabel.fromTokens)) ++
+      Latex.buildLatex(labels) ++
       Seq(Latex.endDocument)
 
   private def writeFile(latex: Seq[String], output: String): Unit = {

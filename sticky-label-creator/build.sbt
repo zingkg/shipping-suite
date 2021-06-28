@@ -3,7 +3,7 @@ lazy val root = project
   .settings(
     name := "sticky-label-creator",
     description := "Sticky Label Creator",
-    version := "0.3",
+    version := "0.4",
     scalaVersion := "3.0.0",
     Compile / mainClass := Some("com.zingkg.stickylabelcreator.Main"),
     libraryDependencies ++= Seq(

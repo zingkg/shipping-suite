@@ -3,9 +3,14 @@ package com.zingkg.comparison
 import com.github.tototoshi.csv.CSVReader
 import com.github.tototoshi.csv.CSVWriter
 import com.github.tototoshi.csv.defaultCSVFormat
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object Main {
+  class ParsingException(exception: Throwable, line: Long) extends Exception {
+    override def toString: String =
+      s"$exception occured on line $line"
+  }
+
   case class Config(inputFile: String = "", maybeOutputFile: Option[String] = None)
 
   def main(args: Array[String]): Unit = {
@@ -26,8 +31,21 @@ object Main {
 
     parser.parse(args, Config()).foreach { config =>
       val lines = readFile(config.inputFile)
-      val processedLines = lines.map(Common.processLine)
-      val (inventory1, inventory2) = Common.accumulateItems(processedLines)
+      val processedLines = lines.map(line => Try(Common.processLine(line))).zipWithIndex
+      val failures = processedLines.collect {
+        case (Failure(e), x) =>
+          Failure(new ParsingException(e, x + 1))
+      }
+      if (failures.nonEmpty) {
+        val failuresString = failures.map(_.toString).mkString("\n")
+        throw new RuntimeException(s"Failed to parse lines:\n$failuresString")
+      }
+
+      val successes = processedLines.collect {
+        case (Success(x), _) =>
+          x
+      }
+      val (inventory1, inventory2) = Common.accumulateItems(successes)
       val matchingLines = Common.assembleMatchingLines(inventory1, inventory2).sortBy(
         _.maybeItem1.map(_.itemId).getOrElse("~~~~~")
       )
@@ -147,7 +165,7 @@ object Common {
       Some(
         Item(
           itemId,
-          Try(quantity.toInt).getOrElse(0),
+          quantity.toInt,
           maybeColumn1,
           maybeColumn2,
           maybeColumn3,

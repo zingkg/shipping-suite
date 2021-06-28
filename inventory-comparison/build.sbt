@@ -3,7 +3,7 @@ lazy val root = project
   .settings(
     name := "inventory-comparison",
     description := "Inventory Comparator",
-    version := "0.4",
+    version := "0.5",
     scalaVersion := "3.0.0",
     Compile / mainClass := Some("com.zingkg.comparison.Main"),
     libraryDependencies ++= Seq(
@@ -14,4 +14,3 @@ lazy val root = project
       "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test"
     )
   )
-

@@ -1,6 +1,8 @@
 # shipping-label-creator
 A shipping label creator generating a LaTeX file to be used to generate a PDF programmatically.
 
+Deprecated, please utilize shipping-label-creator-csv
+
 ## Installation
 Shipping Label Creator requires LaTeX, and Java 7 or higher to run. To build, gradle is required.
 

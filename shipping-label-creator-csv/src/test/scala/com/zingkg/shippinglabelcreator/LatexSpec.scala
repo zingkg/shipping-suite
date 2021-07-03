@@ -72,6 +72,7 @@ class LatexSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks 
         "\\vspace{0.1pc}",
         "Box \\hspace{4pc} 1\\hspace{4pc} OF \\hspace{4pc} 1",
         "\\end{center}",
+        "\\vspace{1pc}",
         "}",
         "",
         "}"
@@ -122,6 +123,7 @@ class LatexSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks 
         "\\vspace{0.1pc}",
         "Box \\hspace{4pc} 1\\hspace{4pc} OF \\hspace{4pc} 2",
         "\\end{center}",
+        "\\vspace{1pc}",
         "}",
         "",
         "\\vbox{",
@@ -140,6 +142,7 @@ class LatexSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks 
         "\\vspace{0.1pc}",
         "Box \\hspace{4pc} 2\\hspace{4pc} OF \\hspace{4pc} 2",
         "\\end{center}",
+        "\\vspace{1pc}",
         "}",
         "",
         "}"

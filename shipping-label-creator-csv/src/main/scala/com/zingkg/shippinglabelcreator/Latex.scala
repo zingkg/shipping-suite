@@ -66,6 +66,7 @@ object Latex {
       val end = Seq(
         s"Box \\hspace{4pc} $i\\hspace{4pc} OF \\hspace{4pc} ${shippingLabel.itemBoxes}",
         "\\end{center}",
+        "\\vspace{1pc}",
         "}",
         ""
       )

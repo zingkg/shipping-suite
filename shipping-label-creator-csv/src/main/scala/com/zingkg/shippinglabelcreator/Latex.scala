@@ -8,11 +8,22 @@ object Latex {
       .replace("&", "\\&")
       .replace("’", "'")
 
-  def header: Seq[String] =
+  def headerPage: Seq[String] =
     Seq(
       "\\documentclass{article}",
       "\\usepackage{tabularx}",
       "\\usepackage[top=0.1cm, bottom=0.1cm, left=0.2cm, right=0.2cm]{geometry}",
+      "\\setlength{\\tabcolsep}{15pt}",
+      "\\begin{document}"
+    )
+
+  def headerFourBySix: Seq[String] =
+    Seq(
+      "\\documentclass{article}",
+      "\\usepackage{tabularx}",
+      "\\usepackage[paperheight=4in,paperwidth=6in,margin=0.25in,heightrounded]{geometry}",
+      "\\pdfpagewidth 6in",
+      "\\pdfpageheight 4in",
       "\\setlength{\\tabcolsep}{15pt}",
       "\\begin{document}"
     )
@@ -76,6 +87,10 @@ object Latex {
 
     Seq(header) ++ body ++ Seq(Seq("}"))
   }
+}
+
+enum PageFormat {
+  case FourBySix, Full
 }
 
 case class ShippingLabel(

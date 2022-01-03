@@ -10,7 +10,7 @@ object Main {
       s"$exception occured on line $line"
   }
 
-  case class Config(inputFile: String = "", maybeOutputFile: Option[String] = None)
+  case class Config(inputFile: String = "", maybeOutputFile: Option[String] = None, format: PageFormat = PageFormat.Full)
 
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[Config]("shippinglabelcreator") {
@@ -25,6 +25,23 @@ object Main {
         .text("output file to save to")
         .action { (outputFile, config) =>
           config.copy(maybeOutputFile = Some(outputFile))
+        }
+
+      opt[String]("format")
+        .text("page format, 4x6 or full")
+        .validate { format =>
+          if (Seq("4x6", "full").contains(format))
+            success
+          else
+            failure("format must be 4x6 or full")
+        }
+        .action { (format, config) =>
+          if (format == "4x6")
+            config.copy(format = PageFormat.FourBySix)
+          else if (format == "full")
+            config.copy(format = PageFormat.Full)
+          else
+            config
         }
     }
 
@@ -44,7 +61,7 @@ object Main {
         case (Success(x), _) =>
           x
       }
-      val latex = processLines(successes)
+      val latex = processLines(successes, config.format)
       writeFile(latex, config.maybeOutputFile.getOrElse("a.tex"))
     }
   }
@@ -56,10 +73,15 @@ object Main {
     lines
   }
 
-  private def processLines(labels: Seq[ShippingLabel]): Seq[String] =
-    Latex.header ++
+  private def processLines(labels: Seq[ShippingLabel], pageFormat: PageFormat): Seq[String] = {
+    val header = pageFormat match {
+      case PageFormat.FourBySix => Latex.headerFourBySix
+      case PageFormat.Full => Latex.headerPage
+    }
+    header ++
       Latex.buildLatex(labels) ++
       Seq(Latex.endDocument)
+  }
 
   private def writeFile(latex: Seq[String], output: String): Unit = {
     val writer = new java.io.BufferedWriter(new java.io.FileWriter(output))

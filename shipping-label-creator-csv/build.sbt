@@ -3,7 +3,7 @@ lazy val root = project
   .settings(
     name := "shipping-label-creator-csv",
     description := "CSV Shipping Label Creator",
-    version := "0.5",
+    version := "0.6",
     scalaVersion := "3.0.0",
     Compile / mainClass := Some("com.zingkg.shippinglabelcreator.Main"),
     libraryDependencies ++= Seq(

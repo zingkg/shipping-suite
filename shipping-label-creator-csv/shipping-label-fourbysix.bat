@@ -3,7 +3,7 @@ title Shipping Label Creator
 echo Welcome to the shipping label creator
 if exist "shipping-label-input.csv" (
     echo Processing file 'shipping-label-input.csv'
-    java -jar shipping-label-creator-csv-0.5.jar -i "shipping-label-input.csv"
+    java -jar shipping-label-creator-csv-0.6.jar -i "shipping-label-input.csv" --format 4x6
     if exist "a.tex" (
         echo Converting to pdf
         pdflatex --quiet a.tex

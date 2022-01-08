@@ -41,7 +41,7 @@ object Latex {
 
   private def shippingLabelStrings(shippingLabel: ShippingLabel): Seq[Seq[String]] = {
     val header = Seq(
-      s"{\\fontsize{${shippingLabel.fontSize}}{${shippingLabel.fontSize / 4}}",
+      s"{\\fontsize{${shippingLabel.fontSize}}{${shippingLabel.fontSize}}",
       "\\selectfont"
     )
 
@@ -53,15 +53,16 @@ object Latex {
         s"${shippingLabel.sourceName} & ${shippingLabel.destinationName} \\\\",
         s"\\multicolumn{1}{l}{${shippingLabel.sourceAddress}} & \\multicolumn{1}{l}{${shippingLabel.destinationAddress}} \\\\",
         s"${shippingLabel.sourceCity}, ${shippingLabel.sourceState} ${shippingLabel.sourceZipCode} & ${shippingLabel.destinationCity}, ${shippingLabel.destinationState} ${shippingLabel.destinationZipCode} \\\\",
-        s"Item \\#${shippingLabel.itemNumber} & ${shippingLabel.casePack} \\\\"
+        "\\vspace{1pc} \\\\",
+        s"Item \\#${shippingLabel.itemNumber} & \\multicolumn{1}{c}{${shippingLabel.casePack}} \\\\"
       )
       val itemNotesSeq = shippingLabel.maybeTotalPieces.map { totalPieces =>
-        Seq(s"& $totalPieces \\\\")
+        Seq(s"& \\multicolumn{1}{c}{$totalPieces} \\\\")
       }.getOrElse(Seq.empty)
       val destHeader = Seq(
         "\\end{tabularx}",
         "",
-        "\\vspace{0.1pc}"
+        "\\vspace{0.2pc}"
       )
       val poSeq = shippingLabel.maybeDestinationPO.map { po =>
         Seq(s"P/O: $po \\\\")
@@ -71,11 +72,12 @@ object Latex {
       }.getOrElse(Seq.empty)
       val poOrDeptEnd =
         if (poSeq.nonEmpty || deptSeq.nonEmpty)
-          Seq("\\vspace{0.1pc}")
+          Seq("\\vspace{0.2pc}")
         else
           Seq.empty
+      val boxFontSize = shippingLabel.fontSize + 8
       val end = Seq(
-        s"Box \\hspace{4pc} $i\\hspace{4pc} OF \\hspace{4pc} ${shippingLabel.itemBoxes}",
+        s"{\\fontsize{$boxFontSize}{$boxFontSize}\\selectfont Box \\hspace{4pc} $i\\hspace{4pc} OF \\hspace{4pc} ${shippingLabel.itemBoxes}}",
         "\\end{center}",
         "\\vspace{1pc}",
         "}",

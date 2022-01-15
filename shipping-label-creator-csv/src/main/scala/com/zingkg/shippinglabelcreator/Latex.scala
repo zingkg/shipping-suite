@@ -39,20 +39,26 @@ object Latex {
         shippingLabelStrings(label).flatten
       }
 
+  private def fontSize(string: String, fontSize: Int): String = {
+    s"{\\fontsize{$fontSize}{$fontSize} \\selectfont $string}"
+  }
+
   private def shippingLabelStrings(shippingLabel: ShippingLabel): Seq[Seq[String]] = {
     val header = Seq(
-      s"{\\fontsize{${shippingLabel.fontSize}}{${shippingLabel.fontSize}}",
+      s"{\\fontsize{${shippingLabel.bodyFontSize}}{${shippingLabel.bodyFontSize}}",
       "\\selectfont"
     )
 
     val body = (1 to shippingLabel.itemBoxes).map { i =>
+      val sourceCityStateZip = s"${shippingLabel.sourceCity}, ${shippingLabel.sourceState} ${shippingLabel.sourceZipCode}"
+      val destinationCityStateZip = s"${shippingLabel.destinationCity}, ${shippingLabel.destinationState} ${shippingLabel.destinationZipCode}"
       val addressSeq = Seq(
         "\\vbox{",
         "\\begin{center}",
         "\\begin{tabularx} {\\textwidth} {X l}",
-        s"${shippingLabel.sourceName} & ${shippingLabel.destinationName} \\\\",
-        s"\\multicolumn{1}{l}{${shippingLabel.sourceAddress}} & \\multicolumn{1}{l}{${shippingLabel.destinationAddress}} \\\\",
-        s"${shippingLabel.sourceCity}, ${shippingLabel.sourceState} ${shippingLabel.sourceZipCode} & ${shippingLabel.destinationCity}, ${shippingLabel.destinationState} ${shippingLabel.destinationZipCode} \\\\",
+        s"${fontSize(shippingLabel.sourceName, shippingLabel.addressFontSize)} & ${fontSize(shippingLabel.destinationName, shippingLabel.addressFontSize)} \\\\",
+        s"\\multicolumn{1}{l}{${fontSize(shippingLabel.sourceAddress, shippingLabel.addressFontSize)}} & \\multicolumn{1}{l}{${fontSize(shippingLabel.destinationAddress, shippingLabel.addressFontSize)}} \\\\",
+        s"${fontSize(sourceCityStateZip, shippingLabel.addressFontSize)} & ${fontSize(destinationCityStateZip, shippingLabel.addressFontSize)} \\\\",
         "\\vspace{1pc} \\\\",
         s"Item \\#${shippingLabel.itemNumber} & \\multicolumn{1}{c}{${shippingLabel.casePack}} \\\\"
       )
@@ -75,9 +81,8 @@ object Latex {
           Seq("\\vspace{0.2pc}")
         else
           Seq.empty
-      val boxFontSize = shippingLabel.fontSize + 8
       val end = Seq(
-        s"{\\fontsize{$boxFontSize}{$boxFontSize}\\selectfont Box \\hspace{4pc} $i\\hspace{4pc} OF \\hspace{4pc} ${shippingLabel.itemBoxes}}",
+        s"{\\fontsize{${shippingLabel.boxFontSize}}{${shippingLabel.boxFontSize}}\\selectfont Box \\hspace{4pc} $i\\hspace{4pc} OF \\hspace{4pc} ${shippingLabel.itemBoxes}}",
         "\\end{center}",
         "\\vspace{1pc}",
         "}",
@@ -112,9 +117,13 @@ case class ShippingLabel(
   sourceCity: String,
   sourceState: String,
   sourceZipCode: String,
-  fontSize: Int
+  addressFontSize: Int,
+  bodyFontSize: Int,
+  boxFontSize: Int
 ) {
-  assert(fontSize > 0, "Font size must be positive")
+  assert(addressFontSize > 0, "Address font size must be positive")
+  assert(bodyFontSize > 0, "Body font size must be positive")
+  assert(boxFontSize > 0, "Box font size must be positive")
   assert(itemBoxes > 0, "Item boxes must be positive")
 }
 
@@ -137,7 +146,9 @@ object ShippingLabel {
       sourceCity = Latex.sanitizeInput(tokens(13)),
       sourceState = Latex.sanitizeInput(tokens(14)),
       sourceZipCode = Latex.sanitizeInput(tokens(15)),
-      fontSize = Latex.sanitizeInput(tokens(16)).toInt
+      addressFontSize = Latex.sanitizeInput(tokens(16)).toInt,
+      bodyFontSize = Latex.sanitizeInput(tokens(17)).toInt,
+      boxFontSize = Latex.sanitizeInput(tokens(18)).toInt
     )
 
   private def parseOptional(tokens: Seq[String], position: Int): Option[String] =

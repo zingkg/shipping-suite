@@ -49,7 +49,9 @@ class LatexSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks 
             sourceCity = "src city",
             sourceState = "src state",
             sourceZipCode = "src zip",
-            fontSize = 18
+            addressFontSize = 14,
+            bodyFontSize = 18,
+            boxFontSize = 26
           )
         )
       )
@@ -59,9 +61,9 @@ class LatexSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks 
         "\\vbox{",
         "\\begin{center}",
         "\\begin{tabularx} {\\textwidth} {X l}",
-        "src & dest \\\\",
-        "\\multicolumn{1}{l}{src addr} & \\multicolumn{1}{l}{dest addr} \\\\",
-        "src city, src state src zip & dest city, dest state dest zip \\\\",
+        "{\\fontsize{14}{14} \\selectfont src} & {\\fontsize{14}{14} \\selectfont dest} \\\\",
+        "\\multicolumn{1}{l}{{\\fontsize{14}{14} \\selectfont src addr}} & \\multicolumn{1}{l}{{\\fontsize{14}{14} \\selectfont dest addr}} \\\\",
+        "{\\fontsize{14}{14} \\selectfont src city, src state src zip} & {\\fontsize{14}{14} \\selectfont dest city, dest state dest zip} \\\\",
         "\\vspace{1pc} \\\\",
         "Item \\#A12345 & \\multicolumn{1}{c}{case 1} \\\\",
         "& \\multicolumn{1}{c}{12 pcs} \\\\",
@@ -101,7 +103,9 @@ class LatexSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks 
             sourceCity = "src city",
             sourceState = "src state",
             sourceZipCode = "src zip",
-            fontSize = 18
+            addressFontSize = 14,
+            bodyFontSize = 18,
+            boxFontSize = 26
           )
         )
       )
@@ -111,9 +115,9 @@ class LatexSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks 
         "\\vbox{",
         "\\begin{center}",
         "\\begin{tabularx} {\\textwidth} {X l}",
-        "src & dest \\\\",
-        "\\multicolumn{1}{l}{src addr} & \\multicolumn{1}{l}{dest addr} \\\\",
-        "src city, src state src zip & dest city, dest state dest zip \\\\",
+        "{\\fontsize{14}{14} \\selectfont src} & {\\fontsize{14}{14} \\selectfont dest} \\\\",
+        "\\multicolumn{1}{l}{{\\fontsize{14}{14} \\selectfont src addr}} & \\multicolumn{1}{l}{{\\fontsize{14}{14} \\selectfont dest addr}} \\\\",
+        "{\\fontsize{14}{14} \\selectfont src city, src state src zip} & {\\fontsize{14}{14} \\selectfont dest city, dest state dest zip} \\\\",
         "\\vspace{1pc} \\\\",
         "Item \\#A12345 & \\multicolumn{1}{c}{case 1} \\\\",
         "& \\multicolumn{1}{c}{12 pcs} \\\\",
@@ -131,9 +135,9 @@ class LatexSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks 
         "\\vbox{",
         "\\begin{center}",
         "\\begin{tabularx} {\\textwidth} {X l}",
-        "src & dest \\\\",
-        "\\multicolumn{1}{l}{src addr} & \\multicolumn{1}{l}{dest addr} \\\\",
-        "src city, src state src zip & dest city, dest state dest zip \\\\",
+        "{\\fontsize{14}{14} \\selectfont src} & {\\fontsize{14}{14} \\selectfont dest} \\\\",
+        "\\multicolumn{1}{l}{{\\fontsize{14}{14} \\selectfont src addr}} & \\multicolumn{1}{l}{{\\fontsize{14}{14} \\selectfont dest addr}} \\\\",
+        "{\\fontsize{14}{14} \\selectfont src city, src state src zip} & {\\fontsize{14}{14} \\selectfont dest city, dest state dest zip} \\\\",
         "\\vspace{1pc} \\\\",
         "Item \\#A12345 & \\multicolumn{1}{c}{case 1} \\\\",
         "& \\multicolumn{1}{c}{12 pcs} \\\\",

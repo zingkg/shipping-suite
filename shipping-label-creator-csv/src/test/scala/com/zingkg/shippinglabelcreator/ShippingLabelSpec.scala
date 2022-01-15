@@ -23,7 +23,9 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
         sourceCity = "Src city",
         sourceState = "Src state",
         sourceZipCode = "Src zip",
-        fontSize = 22
+        addressFontSize = 14,
+        bodyFontSize = 18,
+        boxFontSize = 26
       )
       val actual = ShippingLabel.fromTokens(
         Seq(
@@ -43,7 +45,9 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
           "Src city",
           "Src state",
           "Src zip",
-          "22"
+          "14",
+          "18",
+          "26"
         )
       )
       actual mustBe expected
@@ -67,7 +71,9 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
         sourceCity = "Src city",
         sourceState = "Src state",
         sourceZipCode = "Src zip",
-        fontSize = 22
+        addressFontSize = 14,
+        bodyFontSize = 18,
+        boxFontSize = 22
       )
       val actual = ShippingLabel.fromTokens(
         Seq(
@@ -87,6 +93,8 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
           "Src city",
           "Src state",
           "Src zip",
+          "14",
+          "18",
           "22"
         )
       )
@@ -117,7 +125,9 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
             "Src city",
             "Src state",
             "Src zip",
-            "-11"
+            "-11",
+            "-1",
+            "-3"
           )
         )
       )
@@ -143,6 +153,8 @@ class ShippingLabelSpec extends AnyWordSpec with Matchers {
             "Src city",
             "Src state",
             "Src zip",
+            "14",
+            "18",
             "22"
           )
         )

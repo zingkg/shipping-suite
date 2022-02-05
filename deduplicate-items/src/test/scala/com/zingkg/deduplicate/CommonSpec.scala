@@ -12,21 +12,23 @@ class CommonSpec extends AnyWordSpec with Matchers {
     "generate a map with a single tuple" in {
       val actual = Common.accumulateItems(
         Seq(
-          ("1", 5)
+          Row("1", 5, "9.5")
         )
       )
-      actual mustBe Map("1" -> 5)
+      actual mustBe Map(("1", "9.5") -> Row("1", 5, "9.5"))
     }
 
     "de-duplicate entries" in {
       val actual = Common.accumulateItems(
         Seq(
-          ("1", 5),
-          ("1", 3),
-          ("2", 2)
+          Row("16S004", 1, "10"),
+          Row("16S004", 2, "10"),
+          Row("16S004", 1, "7.5")
         )
       )
-      actual mustBe Map("1" -> 8, "2" -> 2)
+      actual mustBe Map(
+        ("16S004", "10") -> Row("16S004", 3, "10"),
+        ("16S004", "7.5") -> Row("16S004", 1, "7.5"))
     }
   }
 }

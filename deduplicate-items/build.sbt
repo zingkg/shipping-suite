@@ -3,7 +3,7 @@ lazy val root = project
   .settings(
     name := "deduplicate-items",
     description := "Item deduplicator",
-    version := "0.2",
+    version := "0.3",
     scalaVersion := "3.0.0",
     Compile / mainClass := Some("com.zingkg.deduplicate.Main"),
     libraryDependencies ++= Seq(

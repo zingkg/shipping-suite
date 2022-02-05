@@ -27,9 +27,7 @@ object Main {
       val lines = readFile(config.inputFile)
       val processedLines = lines.map(Common.processLine)
       val deduplicated = Common.accumulateItems(processedLines)
-      val unprocessedLines = deduplicated.map {
-        case (key, count) => Common.unprocessLine(key, count)
-      }.toSeq
+      val unprocessedLines = deduplicated.map { case (_, row) => Common.unprocessLine(row) }.toSeq
       writeFile(config.outputFile, unprocessedLines)
     }
   }
@@ -48,16 +46,19 @@ object Main {
   }
 }
 
+case class Row(itemId: String, count: Int, price: String)
+
 object Common {
-  def accumulateItems(tuples: Seq[(String, Int)]): Map[String, Int] =
-    tuples.foldLeft(Map.empty[String, Int]) {
-      case (mapSoFar, (key, count)) =>
-        mapSoFar + (key -> (count + mapSoFar.getOrElse(key, 0)))
+  def accumulateItems(rows: Seq[Row]): Map[(String, String), Row] =
+    rows.foldLeft(Map.empty[(String, String), Row]) {
+      case (mapSoFar, Row(key, count, price)) =>
+        val entry = mapSoFar.getOrElse((key, price), Row(key, 0, price))
+        mapSoFar + ((key, price) -> entry.copy(count = entry.count + count))
     }
 
-  def processLine(line: Seq[String]): (String, Int) =
-    (line(1), line(2).toInt)
+  def processLine(line: Seq[String]): Row =
+    Row(line(0), line(1).toInt, line(2))
 
-  def unprocessLine(key: String, count: Int): Seq[String] =
-    Seq(key, count.toString)
+  def unprocessLine(row: Row): Seq[String] =
+    Seq(row.itemId, row.count.toString, row.price)
 }
